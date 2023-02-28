@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	"github.com/getkin/kin-openapi/openapi3"
@@ -20,6 +21,21 @@ import (
 
 // エラー情報
 type ErrorDescription map[string]interface{}
+
+// Message defines model for Message.
+type Message struct {
+	CreatedAt time.Time `json:"created_at"`
+	Id        int64     `json:"id"`
+	Message   string    `json:"message"`
+	Name      string    `json:"name"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// NewMessage defines model for NewMessage.
+type NewMessage struct {
+	Message string `json:"message"`
+	Name    string `json:"name"`
+}
 
 // Organization
 type Organization struct {
@@ -32,6 +48,9 @@ type Organization struct {
 
 // OrganizationId defines model for organizationId.
 type OrganizationId string
+
+// CreateMessagesSuccess defines model for CreateMessagesSuccess.
+type CreateMessagesSuccess map[string]interface{}
 
 // ErrInternal defines model for ErrInternal.
 type ErrInternal struct {
@@ -51,6 +70,12 @@ type ErrUnauthorized struct {
 	Error ErrorDescription `json:"error"`
 }
 
+// Message 一覧の成功レスポンス
+type GetMessagesSuccess struct {
+	// Message の配列
+	Messages []Message `json:"messages"`
+}
+
 // Organization 取得の成功レスポンス
 type GetOrganizationSuccess struct {
 	// Organization
@@ -63,11 +88,23 @@ type ListOrganizationsSuccess struct {
 	Organizations []Organization `json:"organizations"`
 }
 
+// CreateMessageJSONBody defines parameters for CreateMessage.
+type CreateMessageJSONBody NewMessage
+
+// CreateMessageJSONRequestBody defines body for CreateMessage for application/json ContentType.
+type CreateMessageJSONRequestBody CreateMessageJSONBody
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// ヘルスチェック
 	// (GET /healthcheck)
 	Healthcheck(ctx echo.Context) error
+	// Get all messages
+	// (GET /messages)
+	GetMessages(ctx echo.Context) error
+	// Create a new message
+	// (POST /messages)
+	CreateMessage(ctx echo.Context) error
 	// Organization 一覧
 	// (GET /organizations)
 	ListOrganizations(ctx echo.Context) error
@@ -87,6 +124,24 @@ func (w *ServerInterfaceWrapper) Healthcheck(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.Healthcheck(ctx)
+	return err
+}
+
+// GetMessages converts echo context to params.
+func (w *ServerInterfaceWrapper) GetMessages(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetMessages(ctx)
+	return err
+}
+
+// CreateMessage converts echo context to params.
+func (w *ServerInterfaceWrapper) CreateMessage(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.CreateMessage(ctx)
 	return err
 }
 
@@ -144,6 +199,8 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	}
 
 	router.GET(baseURL+"/healthcheck", wrapper.Healthcheck)
+	router.GET(baseURL+"/messages", wrapper.GetMessages)
+	router.POST(baseURL+"/messages", wrapper.CreateMessage)
 	router.GET(baseURL+"/organizations", wrapper.ListOrganizations)
 	router.GET(baseURL+"/organizations/:organizationId", wrapper.GetOrganization)
 
@@ -152,23 +209,27 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

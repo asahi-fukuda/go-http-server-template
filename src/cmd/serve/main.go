@@ -15,10 +15,12 @@ import (
 	"github.com/labstack/echo/v4"
 	echomiddleware "github.com/labstack/echo/v4/middleware"
 	"github.com/myuoncorp/go-http-server-template/configuration"
+	"github.com/myuoncorp/go-http-server-template/infra/mysql"
 	"github.com/myuoncorp/go-http-server-template/infra/repository"
 	"github.com/myuoncorp/go-http-server-template/logger"
 	"github.com/myuoncorp/go-http-server-template/oapistub"
 	"github.com/myuoncorp/go-http-server-template/server"
+	"github.com/myuoncorp/go-http-server-template/usecase/message"
 	"github.com/myuoncorp/go-http-server-template/usecase/organization"
 
 	"github.com/getsentry/sentry-go"
@@ -47,11 +49,12 @@ func main() {
 	// --------------------------------------------------
 	// Connect to database
 	// --------------------------------------------------
+	// FIXME: DB接続ができない
 	dsn := conf.DSN
-	if dsn == "" {
+	if dsn == "root:secret@tcp(127.0.0.1:3306)/go_practice?parseTime=true" {
 		logger.Fatal("DSN is not specified")
 	}
-	db, err := sqlx.Connect("mysql", dsn)
+	db, err := sqlx.Open("mysql", dsn)
 	if err != nil {
 		logger.Fatal(err)
 	}
@@ -60,6 +63,7 @@ func main() {
 	// Create repository and service
 	// --------------------------------------------------
 	repo := repository.NewOrganizationRepository(db)
+	msgRepo := infra.NewMessageRepository(db)
 
 	// --------------------------------------------------
 	// Setup the application
@@ -78,6 +82,14 @@ func main() {
 			},
 			GetOrganizationsUseCase: &organization.Get{
 				OrganizationRepository: repo,
+			},
+		},
+		&server.MessagesController{
+			ListMessagesUseCase: &message.List{
+				MessageRepository: msgRepo,
+			},
+			SaveMessagesUseCase: &message.Save{
+				MessageRepository: msgRepo,
 			},
 		},
 	)

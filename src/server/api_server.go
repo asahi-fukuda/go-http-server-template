@@ -4,6 +4,7 @@ package server
 type APIServer struct {
 	*HealthCheckController
 	*OrganizationsController
+	*MessagesController
 }
 
 // Controller はコントローラーのインターフェース。

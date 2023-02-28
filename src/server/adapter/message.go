@@ -1,0 +1,26 @@
+package adapter
+
+import (
+	"github.com/myuoncorp/go-http-server-template/domain/model"
+	"github.com/myuoncorp/go-http-server-template/oapistub"
+)
+
+// model.Messageをoapistub.Messageに変換
+func Message(m *model.Message) oapistub.Message {
+	return oapistub.Message{
+		Id:        m.ID,
+		Name:      m.Name,
+		Message:   m.Message,
+		CreatedAt: m.CreatedAt,
+		UpdatedAt: m.UpdatedAt,
+	}
+}
+
+// []model.Messageを[]oapistub.Messageに変換
+func MessageList(ms []*model.Message) []oapistub.Message {
+	ds := make([]oapistub.Message, 0, len(ms))
+	for _, m := range ms {
+		ds = append(ds, Message(m))
+	}
+	return ds
+}

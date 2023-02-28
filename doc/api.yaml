@@ -58,6 +58,32 @@ paths:
       operationId: list-organizations
       description: Organization を一覧する。
     parameters: []
+  /messages:
+    get:
+      summary: Get all messages
+      operationId: getMessages
+      responses:
+        "200":
+          $ref: "#/components/responses/GetMessagesSuccess"
+        "401":
+          $ref: "#/components/responses/ErrUnauthorized"
+        "500":
+          $ref: "#/components/responses/ErrInternal"
+    post:
+      summary: Create a new message
+      operationId: createMessage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewMessage"
+      responses:
+        "200":
+          $ref: "#/components/responses/CreateMessagesSuccess"
+        "401":
+          $ref: "#/components/responses/ErrUnauthorized"
+        "500":
+          $ref: "#/components/responses/ErrInternal"
 components:
   schemas:
     Organization:
@@ -84,6 +110,38 @@ components:
       type: object
       description: エラー情報
       x-examples: {}
+    NewMessage:
+      type: object
+      properties:
+        name:
+          type: string
+        message:
+          type: string
+      required:
+        - name
+        - message
+    Message:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        message:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - message
+        - created_at
+        - updated_at
   responses:
     GetOrganizationSuccess:
       description: Organization 取得の成功レスポンス
@@ -169,6 +227,28 @@ components:
                 organizations:
                   - id: cci509rr6o5jl2ho2j90
                     name: myu-on
+    GetMessagesSuccess:
+      description: Message 一覧の成功レスポンス
+      content:
+        application/json:
+          schema:
+            type: object
+            description: Message 一覧の成功レスポンス
+            properties:
+              messages:
+                type: array
+                description: Message の配列
+                items:
+                  $ref: "#/components/schemas/Message"
+            required:
+              - messages
+    CreateMessagesSuccess:
+      description: Message 投稿成功レスポンス
+      content:
+        application/json:
+          schema:
+            type: object
+
   parameters:
     organizationId:
       name: organizationId
