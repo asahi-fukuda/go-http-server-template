@@ -1,0 +1,14 @@
+.gitignore
+.npmignore
+api.ts
+api/template-api.ts
+base.ts
+common.ts
+configuration.ts
+git_push.sh
+index.ts
+model/get-organization200-response.ts
+model/healthcheck401-response.ts
+model/index.ts
+model/list-organizations200-response.ts
+model/organization.ts

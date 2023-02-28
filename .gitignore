@@ -1,0 +1,5 @@
+tmp
+docker/db/data/*
+docker/db/conf.d
+docker/db/log
+deploy/build

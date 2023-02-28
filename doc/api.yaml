@@ -1,0 +1,179 @@
+openapi: 3.0.3
+info:
+  title: Go HTTP Server Template API
+  version: 0.0.1
+  description: Go HTTP Server Template API
+  contact:
+    name: Myuon Corp.
+servers:
+  - url: "http://localhost:8080"
+    description: localhost
+tags:
+  - name: template
+paths:
+  /healthcheck:
+    get:
+      summary: ヘルスチェック
+      tags:
+        - template
+      responses:
+        "204":
+          description: No Content
+        "401":
+          $ref: "#/components/responses/ErrUnauthorized"
+        "500":
+          $ref: "#/components/responses/ErrInternal"
+      operationId: healthcheck
+      description: ヘルスチェックを行う。
+  "/organizations/{organizationId}":
+    get:
+      summary: Organization 取得
+      tags:
+        - template
+      responses:
+        "200":
+          $ref: "#/components/responses/GetOrganizationSuccess"
+        "401":
+          $ref: "#/components/responses/ErrUnauthorized"
+        "404":
+          $ref: "#/components/responses/ErrNotFound"
+        "500":
+          $ref: "#/components/responses/ErrInternal"
+      operationId: get-organization
+      description: Organization を取得する。
+    parameters:
+      - $ref: "#/components/parameters/organizationId"
+  /organizations:
+    get:
+      summary: Organization 一覧
+      tags:
+        - template
+      responses:
+        "200":
+          $ref: "#/components/responses/ListOrganizationsSuccess"
+        "401":
+          $ref: "#/components/responses/ErrUnauthorized"
+        "500":
+          $ref: "#/components/responses/ErrInternal"
+      operationId: list-organizations
+      description: Organization を一覧する。
+    parameters: []
+components:
+  schemas:
+    Organization:
+      title: Organization
+      x-stoplight:
+        id: f42jo7y4yqujw
+      type: object
+      description: Organization
+      x-examples: {}
+      properties:
+        id:
+          type: string
+          description: Organization ID
+        name:
+          type: string
+          description: Organization の名前
+      required:
+        - id
+        - name
+    ErrorDescription:
+      title: ErrorDescription
+      x-stoplight:
+        id: kfpjk8feu0hd4
+      type: object
+      description: エラー情報
+      x-examples: {}
+  responses:
+    GetOrganizationSuccess:
+      description: Organization 取得の成功レスポンス
+      content:
+        application/json:
+          schema:
+            type: object
+            description: Organization 取得の成功レスポンス
+            properties:
+              organization:
+                $ref: "#/components/schemas/Organization"
+            required:
+              - organization
+          examples:
+            成功:
+              value:
+                organization:
+                  id: cci509rr6o5jl2ho2j90
+                  name: myu-on
+    ErrUnauthorized:
+      description: 認可できないリクエストを受け付けた場合のレスポンス
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: "#/components/schemas/ErrorDescription"
+            required:
+              - error
+    ErrBadRequest:
+      description: 入力値不正の場合のレスポンス
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: "#/components/schemas/ErrorDescription"
+            required:
+              - error
+          examples: {}
+    ErrInternal:
+      description: サーバエラーの場合のレスポンス
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: "#/components/schemas/ErrorDescription"
+            required:
+              - error
+    ErrNotFound:
+      description: リソースが見つからない場合のレスポンス
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: "#/components/schemas/ErrorDescription"
+            required:
+              - error
+    ListOrganizationsSuccess:
+      description: Organization 一覧の成功レスポンス
+      content:
+        application/json:
+          schema:
+            type: object
+            description: Organization 一覧の成功レスポンス
+            properties:
+              organizations:
+                type: array
+                description: Organization の配列
+                items:
+                  $ref: "#/components/schemas/Organization"
+            required:
+              - organizations
+          examples:
+            成功:
+              value:
+                organizations:
+                  - id: cci509rr6o5jl2ho2j90
+                    name: myu-on
+  parameters:
+    organizationId:
+      name: organizationId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Organization ID

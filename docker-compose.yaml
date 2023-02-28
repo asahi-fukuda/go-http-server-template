@@ -1,0 +1,71 @@
+version: "3"
+
+services:
+  apieditor:
+    image: swaggerapi/swagger-editor
+    ports:
+      - 9090:8080
+    volumes:
+      - ./doc:/doc
+    environment:
+      - SWAGGER_FILE=/doc/api.yaml
+
+  gencode:
+    image: openapitools/openapi-generator-cli
+    volumes:
+      - .:/app
+    command: generate -g typescript-axios --api-package=api --model-package=model --additional-properties=withSeparateModelsAndApi=true,snapshot=true -i /app/doc/api.yaml -o /app/pkg/ts-client/
+  redoc:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile_gendoc
+    environment:
+      INPUT_FILE: ./doc/api.yaml
+      OUTPUT_FILE: ./doc/index.html
+    volumes:
+      - .:/app
+
+  app:
+    build:
+      context: .
+      dockerfile: ./docker/app/Dockerfile
+    volumes:
+      - .:/srv/go-http-server-template:cached
+      # - ~/.gitconfig:/root/.gitconfig:ro
+      - ~/.aws/:/root/.aws/:ro
+    command: "air -c .air.toml"
+    expose:
+      - 8080
+    ports:
+      - '8080:8080'
+    env_file:
+      - ./docker/app/.env
+    depends_on:
+      - db
+
+  # db:
+  #   image: mysql:5.7
+  #   ports:
+  #     - '3306:3306'
+  #   env_file:
+  #     - ./docker/db/.env
+  #   command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --skip-character-set-client-handshake
+  #   volumes:
+  #     - ./docker/db/conf.d/mysql.conf:/etc/mysql/conf.d/my.cnf:cached
+  #     - ./docker/db/data:/var/lib/mysql:cached
+  #     - ./docker/db/initdb.d:/docker-entrypoint-initdb.d:cached
+
+  db:
+    image: mysql:8
+    # for m1 mac
+    platform: linux/x86_64
+    ports:
+      - '3306:3306'
+    env_file:
+      - ./docker/db/.env
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --skip-character-set-client-handshake --general-log=true --general-log-file=/var/log/mysql/mysql.log
+    volumes:
+      - ./docker/db/conf.d/mysql.conf:/etc/mysql/conf.d/my.cnf:cached
+      - ./docker/db/data:/var/lib/mysql:cached
+      - ./docker/db/initdb.d:/docker-entrypoint-initdb.d:cached
+      - ./docker/db/log:/var/log/mysql:cached

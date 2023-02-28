@@ -1,0 +1,14 @@
+FROM node:13-alpine
+
+ENV SWAGGER_CLI_VERSION 4.0.4
+ENV WORKSPACE=/app
+
+RUN npm install -g openapi-types@>=7 swagger-cli@${SWAGGER_CLI_VERSION}
+
+ENV INPUT_FILE $INPUT_FILE
+ENV OUTPUT_FILE $OUTPUT_FILE
+
+WORKDIR $WORKSPACE
+COPY . $WORKSPACE
+
+CMD npx redoc-cli --output $OUTPUT_FILE bundle $INPUT_FILE
