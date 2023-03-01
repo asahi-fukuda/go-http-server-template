@@ -31,7 +31,7 @@ func (s *MessagesController) GetMessages(ctx echo.Context) error {
 	}
 
 	var response oapistub.GetMessagesSuccess
-	response.Messages = adapter.MessageList(output.Messages)
+	response.Messages = adapter.B(adapter.MessageList(output.Messages))
 	return ctx.JSON(http.StatusOK, response)
 }
 

@@ -24,3 +24,18 @@ func MessageList(ms []*model.Message) []*oapistub.Message {
 	}
 	return ds
 }
+
+// []*oapistub.Messageを[]oapistub.Messageに変換
+func B(ms []*oapistub.Message) []oapistub.Message {
+	ds := make([]oapistub.Message, len(ms))
+	for _, m := range ms {
+		ds = append(ds, oapistub.Message{
+			Id:        m.Id,
+			Name:      m.Name,
+			Message:   m.Message,
+			CreatedAt: m.CreatedAt,
+			UpdatedAt: m.UpdatedAt,
+		})
+	}
+	return ds
+}
