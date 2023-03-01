@@ -16,10 +16,8 @@ type Save struct {
 type (
 	// SaveInput
 	SaveInput struct {
-		Name      string
-		Message   string
-		CreatedAt time.Time
-		UpdatedAt time.Time
+		Name    string
+		Message string
 	}
 	// SaveOutput
 	SaveOutput struct{}
@@ -27,16 +25,12 @@ type (
 
 // Execute
 func (u *Save) Execute(ctx context.Context, input *SaveInput) (*SaveOutput, error) {
-	message := &model.Message{
+	err := u.MessageRepository.Save(ctx, &model.Message{
 		Name:      input.Name,
 		Message:   input.Message,
-		CreatedAt: input.CreatedAt,
-		UpdatedAt: input.UpdatedAt,
-	}
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	})
 
-	err := u.MessageRepository.Save(ctx, message)
-	if err != nil {
-		return nil, err
-	}
-	return &SaveOutput{}, nil
+	return &SaveOutput{}, err
 }

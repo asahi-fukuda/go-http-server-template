@@ -2,7 +2,6 @@ package infra
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/jmoiron/sqlx"
 
@@ -29,20 +28,12 @@ func (m *MessageRepository) Save(ctx context.Context, msg *model.Message) error 
 		INSERT INTO messages(name, message, created_at, updated_at)
 		VALUES(:name, :message, :created_at, :updated_at)
 		`, &message)
-	if err != nil {
-		fmt.Println(err)
-	}
 
-	return nil
+	return err
 }
 
-// FIXME:
 func (m *MessageRepository) List(ctx context.Context) ([]*model.Message, error) {
-	messages := []*model.Message{}
-	err := m.DB.Select(&messages, "SELECT * FROM messages")
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	return messages, nil
+	var messages []*model.Message
+	err := m.DB.SelectContext(ctx, &messages, "SELECT * FROM messages")
+	return messages, err
 }

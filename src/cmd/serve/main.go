@@ -49,11 +49,7 @@ func main() {
 	// --------------------------------------------------
 	// Connect to database
 	// --------------------------------------------------
-	// FIXME: DB接続ができない
 	dsn := conf.DSN
-	if dsn == "root:secret@tcp(127.0.0.1:3306)/go_practice?parseTime=true" {
-		logger.Fatal("DSN is not specified")
-	}
 	db, err := sqlx.Open("mysql", dsn)
 	if err != nil {
 		logger.Fatal(err)
