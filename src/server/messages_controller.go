@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -37,7 +36,7 @@ func (s *MessagesController) GetMessages(ctx echo.Context) error {
 
 func (s *MessagesController) CreateMessage(ctx echo.Context) error {
 	req := &oapistub.NewMessage{}
-	err := json.NewDecoder(ctx.Request().Body).Decode(req)
+	err := ctx.Bind(req)
 	if err != nil {
 		logger.Errorf("failed to get message. err: %v", err)
 		return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
