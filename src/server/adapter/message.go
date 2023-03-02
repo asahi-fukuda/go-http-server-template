@@ -18,7 +18,7 @@ func ToMessage(m *model.Message) *oapistub.Message {
 
 // []*model.Messageを[]*oapistub.Messageに変換
 func ToMessages(ms []*model.Message) []*oapistub.Message {
-	ds := make([]*oapistub.Message, len(ms))
+	ds := make([]*oapistub.Message, 0, len(ms))
 	for _, m := range ms {
 		ds = append(ds, ToMessage(m))
 	}
