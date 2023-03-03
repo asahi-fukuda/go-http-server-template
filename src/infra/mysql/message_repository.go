@@ -37,9 +37,9 @@ func (m *MessageRepository) Save(ctx context.Context, msg *model.Message) (int64
 		return 0, err
 	}
 
-	message.ID = int64(id)
+	msg.ID = int64(id)
 
-	return message.ID, err
+	return msg.ID, err
 }
 
 func (m *MessageRepository) List(ctx context.Context) ([]*model.Message, error) {
