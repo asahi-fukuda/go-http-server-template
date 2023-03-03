@@ -57,5 +57,5 @@ func (s *MessagesController) CreateMessage(ctx echo.Context) error {
 		})
 	}
 
-	return ctx.JSON(http.StatusOK, oapistub.CreateMessagesSuccess{Id: output.ID})
+	return ctx.JSON(http.StatusCreated, oapistub.CreateMessagesSuccess{Id: output.ID})
 }
