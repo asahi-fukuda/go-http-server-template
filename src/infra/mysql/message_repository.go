@@ -16,7 +16,7 @@ func NewMessageRepository(db *sqlx.DB) *MessageRepository {
 	return &MessageRepository{db}
 }
 
-func (m *MessageRepository) Save(ctx context.Context, msg *model.Message) error {
+func (m *MessageRepository) Save(ctx context.Context, msg *model.Message) (int64, error) {
 	message := &model.Message{
 		Name:      msg.Name,
 		Message:   msg.Message,
@@ -24,12 +24,22 @@ func (m *MessageRepository) Save(ctx context.Context, msg *model.Message) error 
 		UpdatedAt: msg.UpdatedAt,
 	}
 
-	_, err := m.DB.NamedExecContext(ctx, `
+	result, err := m.DB.NamedExecContext(ctx, `
 		INSERT INTO messages(name, message, created_at, updated_at)
 		VALUES(:name, :message, :created_at, :updated_at)
 		`, &message)
+	if err != nil {
+		return 0, err
+	}
 
-	return err
+	id, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	message.ID = int64(id)
+
+	return message.ID, err
 }
 
 func (m *MessageRepository) List(ctx context.Context) ([]*model.Message, error) {

@@ -7,6 +7,6 @@ import (
 )
 
 type MessageRepository interface {
-	Save(ctx context.Context, message *model.Message) error
+	Save(ctx context.Context, message *model.Message) (int64, error)
 	List(ctx context.Context) ([]*model.Message, error)
 }

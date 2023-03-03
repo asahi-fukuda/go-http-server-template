@@ -50,7 +50,7 @@ func main() {
 	// Connect to database
 	// --------------------------------------------------
 	dsn := conf.DSN
-	db, err := sqlx.Open("mysql", dsn)
+	db, err := sqlx.Connect("mysql", dsn)
 	if err != nil {
 		logger.Fatal(err)
 	}

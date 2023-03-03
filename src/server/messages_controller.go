@@ -30,7 +30,7 @@ func (s *MessagesController) GetMessages(ctx echo.Context) error {
 	}
 
 	var response oapistub.GetMessagesSuccess
-	response.Messages = adapter.MessagePointersToMessages(adapter.ToMessages(output.Messages))
+	response.Messages = adapter.ToOapiMessage(output.Messages)
 	return ctx.JSON(http.StatusOK, response)
 }
 
@@ -45,7 +45,7 @@ func (s *MessagesController) CreateMessage(ctx echo.Context) error {
 		})
 	}
 
-	_, err = s.SaveMessagesUseCase.Execute(ctx.Request().Context(), &message.SaveInput{
+	output, err := s.SaveMessagesUseCase.Execute(ctx.Request().Context(), &message.SaveInput{
 		Name:    req.Name,
 		Message: req.Message,
 	})
@@ -57,5 +57,5 @@ func (s *MessagesController) CreateMessage(ctx echo.Context) error {
 		})
 	}
 
-	return ctx.JSON(http.StatusOK, oapistub.CreateMessagesSuccess{})
+	return ctx.JSON(http.StatusOK, oapistub.CreateMessagesSuccess{Id: output.ID})
 }
