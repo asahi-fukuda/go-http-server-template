@@ -16,12 +16,10 @@ import (
 	echomiddleware "github.com/labstack/echo/v4/middleware"
 	"github.com/myuoncorp/go-http-server-template/configuration"
 	"github.com/myuoncorp/go-http-server-template/infra/mysql"
-	"github.com/myuoncorp/go-http-server-template/infra/repository"
 	"github.com/myuoncorp/go-http-server-template/logger"
 	"github.com/myuoncorp/go-http-server-template/oapistub"
 	"github.com/myuoncorp/go-http-server-template/server"
 	"github.com/myuoncorp/go-http-server-template/usecase/message"
-	"github.com/myuoncorp/go-http-server-template/usecase/organization"
 
 	"github.com/getsentry/sentry-go"
 	sentryecho "github.com/getsentry/sentry-go/echo"
@@ -50,15 +48,15 @@ func main() {
 	// Connect to database
 	// --------------------------------------------------
 	dsn := conf.DSN
-	db, err := sqlx.Connect("mysql", dsn)
+	db, err := sqlx.Open("mysql", dsn)
 	if err != nil {
 		logger.Fatal(err)
 	}
+	defer db.Close()
 
 	// --------------------------------------------------
 	// Create repository and service
 	// --------------------------------------------------
-	repo := repository.NewOrganizationRepository(db)
 	msgRepo := infra.NewMessageRepository(db)
 
 	// --------------------------------------------------
@@ -71,14 +69,6 @@ func main() {
 			Revision:  revision,
 			BuiltAt:   builtAt,
 			GoVersion: goVersion,
-		},
-		&server.OrganizationsController{
-			ListOrganizationsUseCase: &organization.List{
-				OrganizationRepository: repo,
-			},
-			GetOrganizationsUseCase: &organization.Get{
-				OrganizationRepository: repo,
-			},
 		},
 		&server.MessagesController{
 			ListMessagesUseCase: &message.List{
