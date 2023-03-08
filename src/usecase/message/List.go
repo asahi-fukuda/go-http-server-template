@@ -1,4 +1,4 @@
-package organization
+package message
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 
 // List
 type List struct {
-	OrganizationRepository repository.OrganizationRepository
+	MessageRepository repository.MessageRepository
 }
 
 type (
@@ -17,15 +17,15 @@ type (
 	ListInput struct{}
 	// ListOutput
 	ListOutput struct {
-		Organizations []*model.Organization
+		Messages []*model.Message
 	}
 )
 
 // Execute
 func (u *List) Execute(ctx context.Context, input *ListInput) (*ListOutput, error) {
-	organizations, err := u.OrganizationRepository.List(ctx)
+	messages, err := u.MessageRepository.List(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return &ListOutput{Organizations: organizations}, nil
+	return &ListOutput{Messages: messages}, nil
 }

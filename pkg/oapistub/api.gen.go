@@ -8,12 +8,11 @@ import (
 	"compress/gzip"
 	"encoding/base64"
 	"fmt"
-	"net/http"
 	"net/url"
 	"path"
 	"strings"
+	"time"
 
-	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
 )
@@ -21,17 +20,25 @@ import (
 // エラー情報
 type ErrorDescription map[string]interface{}
 
-// Organization
-type Organization struct {
-	// Organization ID
-	Id string `json:"id"`
-
-	// Organization の名前
-	Name string `json:"name"`
+// Message defines model for Message.
+type Message struct {
+	CreatedAt time.Time `json:"created_at"`
+	Id        int64     `json:"id"`
+	Message   string    `json:"message"`
+	Name      string    `json:"name"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
-// OrganizationId defines model for organizationId.
-type OrganizationId string
+// NewMessage defines model for NewMessage.
+type NewMessage struct {
+	Message string `json:"message"`
+	Name    string `json:"name"`
+}
+
+// CreateMessagesSuccess defines model for CreateMessagesSuccess.
+type CreateMessagesSuccess struct {
+	Id int64 `json:"id"`
+}
 
 // ErrInternal defines model for ErrInternal.
 type ErrInternal struct {
@@ -39,41 +46,29 @@ type ErrInternal struct {
 	Error ErrorDescription `json:"error"`
 }
 
-// ErrNotFound defines model for ErrNotFound.
-type ErrNotFound struct {
-	// エラー情報
-	Error ErrorDescription `json:"error"`
+// Message 一覧の成功レスポンス
+type GetMessagesSuccess struct {
+	// Message の配列
+	Messages []Message `json:"messages"`
 }
 
-// ErrUnauthorized defines model for ErrUnauthorized.
-type ErrUnauthorized struct {
-	// エラー情報
-	Error ErrorDescription `json:"error"`
-}
+// CreateMessageJSONBody defines parameters for CreateMessage.
+type CreateMessageJSONBody NewMessage
 
-// Organization 取得の成功レスポンス
-type GetOrganizationSuccess struct {
-	// Organization
-	Organization Organization `json:"organization"`
-}
-
-// Organization 一覧の成功レスポンス
-type ListOrganizationsSuccess struct {
-	// Organization の配列
-	Organizations []Organization `json:"organizations"`
-}
+// CreateMessageJSONRequestBody defines body for CreateMessage for application/json ContentType.
+type CreateMessageJSONRequestBody CreateMessageJSONBody
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// ヘルスチェック
 	// (GET /healthcheck)
 	Healthcheck(ctx echo.Context) error
-	// Organization 一覧
-	// (GET /organizations)
-	ListOrganizations(ctx echo.Context) error
-	// Organization 取得
-	// (GET /organizations/{organizationId})
-	GetOrganization(ctx echo.Context, organizationId OrganizationId) error
+	// Get all messages
+	// (GET /messages)
+	GetMessages(ctx echo.Context) error
+	// Create a new message
+	// (POST /messages)
+	CreateMessage(ctx echo.Context) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -90,28 +85,21 @@ func (w *ServerInterfaceWrapper) Healthcheck(ctx echo.Context) error {
 	return err
 }
 
-// ListOrganizations converts echo context to params.
-func (w *ServerInterfaceWrapper) ListOrganizations(ctx echo.Context) error {
+// GetMessages converts echo context to params.
+func (w *ServerInterfaceWrapper) GetMessages(ctx echo.Context) error {
 	var err error
 
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.ListOrganizations(ctx)
+	err = w.Handler.GetMessages(ctx)
 	return err
 }
 
-// GetOrganization converts echo context to params.
-func (w *ServerInterfaceWrapper) GetOrganization(ctx echo.Context) error {
+// CreateMessage converts echo context to params.
+func (w *ServerInterfaceWrapper) CreateMessage(ctx echo.Context) error {
 	var err error
-	// ------------- Path parameter "organizationId" -------------
-	var organizationId OrganizationId
-
-	err = runtime.BindStyledParameterWithLocation("simple", false, "organizationId", runtime.ParamLocationPath, ctx.Param("organizationId"), &organizationId)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter organizationId: %s", err))
-	}
 
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.GetOrganization(ctx, organizationId)
+	err = w.Handler.CreateMessage(ctx)
 	return err
 }
 
@@ -144,31 +132,28 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	}
 
 	router.GET(baseURL+"/healthcheck", wrapper.Healthcheck)
-	router.GET(baseURL+"/organizations", wrapper.ListOrganizations)
-	router.GET(baseURL+"/organizations/:organizationId", wrapper.GetOrganization)
+	router.GET(baseURL+"/messages", wrapper.GetMessages)
+	router.POST(baseURL+"/messages", wrapper.CreateMessage)
 
 }
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

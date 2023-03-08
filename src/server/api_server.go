@@ -3,7 +3,7 @@ package server
 // APIServer は API サーバーを表す。
 type APIServer struct {
 	*HealthCheckController
-	*OrganizationsController
+	*MessagesController
 }
 
 // Controller はコントローラーのインターフェース。
